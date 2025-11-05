@@ -1,0 +1,48 @@
+{% extends 'security_qr_app/base.html' %}
+
+{% block title %}Iniciar Sesión - Seguridad en el Trabajo{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="margin-top: 10vh;">
+    <div class="col-md-5">
+        <div class="card card-custom">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-shield-alt fa-4x text-primary mb-3"></i>
+                    <h2 class="fw-bold">Seguridad en el Trabajo</h2>
+                    <p class="text-muted">Panel de Administración</p>
+                </div>
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user me-2"></i>Usuario
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" required autofocus>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Contraseña
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-custom w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                    </button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Solo administradores pueden acceder
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

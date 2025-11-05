@@ -1,0 +1,198 @@
+{% extends 'security_qr_app/base.html' %}
+
+{% block title %}{{ documento.titulo }} - Seguridad en el Trabajo{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>
+                    {{ documento.titulo }}
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if documento.descripcion %}
+                <div class="mb-4">
+                    <h6 class="text-muted">Descripción:</h6>
+                    <p>{{ documento.descripcion }}</p>
+                </div>
+                {% endif %}
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-tag me-2"></i>Tipo:</strong>
+                        {% if documento.tipo_archivo == 'pdf' %}
+                            <span class="badge bg-danger">PDF</span>
+                        {% elif documento.tipo_archivo == 'imagen' %}
+                            <span class="badge bg-info">Imagen</span>
+                        {% elif documento.tipo_archivo == 'video' %}
+                            <span class="badge bg-warning">Video</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Otro</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-calendar me-2"></i>Fecha:</strong>
+                        {{ documento.fecha_subida|date:"d/m/Y H:i" }}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-user me-2"></i>Subido por:</strong>
+                        {{ documento.subido_por.username }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fas fa-download me-2"></i>Descargas:</strong>
+                        <span class="badge bg-success">{{ documento.descargas }}</span>
+                    </div>
+                </div>
+
+                <!-- Vista previa del archivo -->
+                <div class="mb-4">
+                    <h6 class="mb-3"><i class="fas fa-eye me-2"></i>Vista Previa:</h6>
+                    
+                    {% if documento.tipo_archivo == 'imagen' %}
+                        <div class="text-center">
+                            <img src="{{ documento.archivo.url }}" class="img-fluid rounded shadow" 
+                                 alt="{{ documento.titulo }}" style="max-height: 500px;">
+                        </div>
+                    {% elif documento.tipo_archivo == 'pdf' %}
+                        <div class="embed-responsive" style="height: 600px;">
+                            <iframe src="{{ documento.archivo.url }}" 
+                                    class="w-100 h-100 rounded shadow" 
+                                    frameborder="0"></iframe>
+                        </div>
+                    {% elif documento.tipo_archivo == 'video' %}
+                        <div class="text-center">
+                            <video controls class="w-100 rounded shadow" style="max-height: 500px;">
+                                <source src="{{ documento.archivo.url }}" type="video/mp4">
+                                Tu navegador no soporta la reproducción de videos.
+                            </video>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Vista previa no disponible para este tipo de archivo.
+                            <a href="{{ documento.archivo.url }}" target="_blank">Abrir archivo</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'descargar_archivo' documento.codigo_unico %}" 
+                       class="btn btn-primary btn-custom">
+                        <i class="fas fa-download me-2"></i>
+                        Descargar Archivo Original
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-custom">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Código QR -->
+        <div class="card card-custom mb-4">
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-qrcode me-2"></i>
+                    Código QR
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                {% if documento.qr_code %}
+                    <img src="{{ documento.qr_code.url }}" class="img-fluid mb-3 rounded shadow" 
+                         alt="Código QR" style="max-width: 300px;">
+                    
+                    <div class="alert alert-info alert-custom">
+                        <small>
+                            <i class="fas fa-mobile-alt me-2"></i>
+                            Escanea este código desde tu celular para acceder al documento
+                        </small>
+                    </div>
+
+                    <a href="{% url 'descargar_qr' documento.codigo_unico %}" 
+                       class="btn btn-success btn-custom w-100 mb-2">
+                        <i class="fas fa-download me-2"></i>
+                        Descargar QR
+                    </a>
+
+                    <button onclick="imprimirQR()" class="btn btn-outline-primary btn-custom w-100">
+                        <i class="fas fa-print me-2"></i>
+                        Imprimir QR
+                    </button>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Código QR no disponible
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Información del enlace -->
+        <div class="card card-custom">
+            <div class="card-header bg-info text-white py-3">
+                <h6 class="mb-0">
+                    <i class="fas fa-link me-2"></i>
+                    Enlace Directo
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="enlaceDocumento" 
+                           value="http://{{ request.get_host }}/ver/{{ documento.codigo_unico }}/" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="copiarEnlace()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Comparte este enlace para acceso directo
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function imprimirQR() {
+    const qrImg = document.querySelector('img[alt="Código QR"]');
+    if (qrImg) {
+        const ventana = window.open('', '', 'width=600,height=600');
+        ventana.document.write('<html><head><title>Imprimir QR</title>');
+        ventana.document.write('<style>body{text-align:center;padding:20px;}</style></head>');
+        ventana.document.write('<body>');
+        ventana.document.write('<h2>{{ documento.titulo }}</h2>');
+        ventana.document.write('<img src="' + qrImg.src + '" style="max-width:400px;">');
+        ventana.document.write('</body></html>');
+        ventana.document.close();
+        ventana.print();
+    }
+}
+
+function copiarEnlace() {
+    const enlace = document.getElementById('enlaceDocumento');
+    enlace.select();
+    document.execCommand('copy');
+    
+    const btn = event.target.closest('button');
+    const iconOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    btn.classList.add('btn-success');
+    btn.classList.remove('btn-outline-secondary');
+    
+    setTimeout(() => {
+        btn.innerHTML = iconOriginal;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>
+{% endblock %}

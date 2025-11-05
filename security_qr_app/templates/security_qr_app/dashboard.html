@@ -1,0 +1,160 @@
+{% extends 'security_qr_app/base.html' %}
+
+{% block title %}Dashboard - Seguridad en el Trabajo{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-custom mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Panel de Control
+                        </h2>
+                        <p class="text-muted mb-0">Gestiona los documentos de seguridad</p>
+                    </div>
+                    <a href="{% url 'subir_documento' %}" class="btn btn-success btn-custom">
+                        <i class="fas fa-plus me-2"></i>Subir Nuevo Documento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card card-custom bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Total Documentos</h6>
+                        <h2 class="mb-0">{{ documentos.count }}</h2>
+                    </div>
+                    <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-custom bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Total Descargas</h6>
+                        <h2 class="mb-0">
+                            {% for doc in documentos %}{{ doc.descargas|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                        </h2>
+                    </div>
+                    <i class="fas fa-download fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card card-custom bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Códigos QR</h6>
+                        <h2 class="mb-0">{{ documentos.count }}</h2>
+                    </div>
+                    <i class="fas fa-qrcode fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-custom">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Documentos Subidos
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if documentos %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th><i class="fas fa-file me-2"></i>Título</th>
+                                <th><i class="fas fa-tag me-2"></i>Tipo</th>
+                                <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                                <th><i class="fas fa-download me-2"></i>Descargas</th>
+                                <th class="text-center"><i class="fas fa-cogs me-2"></i>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for documento in documentos %}
+                            <tr>
+                                <td>
+                                    <strong>{{ documento.titulo }}</strong>
+                                    {% if documento.descripcion %}
+                                    <br><small class="text-muted">{{ documento.descripcion|truncatewords:10 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if documento.tipo_archivo == 'pdf' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-file-pdf me-1"></i>PDF
+                                        </span>
+                                    {% elif documento.tipo_archivo == 'imagen' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-image me-1"></i>Imagen
+                                        </span>
+                                    {% elif documento.tipo_archivo == 'video' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-video me-1"></i>Video
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-file me-1"></i>Otro
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ documento.fecha_subida|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span class="badge bg-success">{{ documento.descargas }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'ver_documento_admin' documento.codigo_unico %}" 
+                                       class="btn btn-sm btn-primary" title="Ver documento">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'descargar_qr' documento.codigo_unico %}" 
+                                       class="btn btn-sm btn-success" title="Descargar QR">
+                                        <i class="fas fa-qrcode"></i>
+                                    </a>
+                                    <a href="{% url 'eliminar_documento' documento.codigo_unico %}" 
+                                       class="btn btn-sm btn-danger" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-5x text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay documentos subidos</h4>
+                    <p class="text-muted">Comienza subiendo tu primer documento de seguridad</p>
+                    <a href="{% url 'subir_documento' %}" class="btn btn-primary btn-custom mt-3">
+                        <i class="fas fa-plus me-2"></i>Subir Documento
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

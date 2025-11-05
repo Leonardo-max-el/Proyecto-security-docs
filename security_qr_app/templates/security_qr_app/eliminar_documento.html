@@ -1,0 +1,70 @@
+{% extends 'security_qr_app/base.html' %}
+
+{% block title %}Eliminar Documento - Seguridad en el Trabajo{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card card-custom border-danger">
+            <div class="card-header bg-danger text-white py-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atención:</strong> Esta acción no se puede deshacer.
+                </div>
+
+                <h5 class="mb-3">¿Estás seguro de eliminar este documento?</h5>
+
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-file-alt me-2"></i>
+                            {{ documento.titulo }}
+                        </h6>
+                        {% if documento.descripcion %}
+                        <p class="card-text text-muted mb-2">{{ documento.descripcion }}</p>
+                        {% endif %}
+                        <div class="small">
+                            <span class="badge bg-secondary me-2">
+                                {{ documento.tipo_archivo|upper }}
+                            </span>
+                            <span class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ documento.fecha_subida|date:"d/m/Y" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger">
+                    <strong>Se eliminará:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>El archivo original</li>
+                        <li>El código QR generado</li>
+                        <li>Todos los registros asociados</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash me-2"></i>
+                            Sí, Eliminar Documento
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
